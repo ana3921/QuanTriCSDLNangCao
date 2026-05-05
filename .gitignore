@@ -1,0 +1,8 @@
+.idea/
+.vscode/
+backend/target/
+**/target/
+*.iml
+*.log
+.DS_Store
+Thumbs.db
