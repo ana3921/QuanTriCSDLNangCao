@@ -15,19 +15,19 @@ public class AccountController {
     private final AccountService accountService;
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<AccountDTO>> getAccountsByCustomer(@PathVariable Integer customerId) {
+    public ResponseEntity<List<AccountDTO>> getAccountsByCustomer(@PathVariable("customerId") Integer customerId) {
         List<AccountDTO> accounts = accountService.getAccountsByCustomerId(customerId);
         return ResponseEntity.ok(accounts);
     }
 
     @GetMapping("/number/{accountNumber}")
-    public ResponseEntity<AccountDTO> getAccountByNumber(@PathVariable String accountNumber) {
+    public ResponseEntity<AccountDTO> getAccountByNumber(@PathVariable("accountNumber") String accountNumber) {
         AccountDTO account = accountService.getAccountByNumber(accountNumber);
         return ResponseEntity.ok(account);
     }
 
     @GetMapping("/customer/{customerId}/active")
-    public ResponseEntity<List<AccountDTO>> getActiveAccounts(@PathVariable Integer customerId) {
+    public ResponseEntity<List<AccountDTO>> getActiveAccounts(@PathVariable("customerId") Integer customerId) {
         List<AccountDTO> accounts = accountService.getActiveAccountsByCustomerId(customerId);
         return ResponseEntity.ok(accounts);
     }

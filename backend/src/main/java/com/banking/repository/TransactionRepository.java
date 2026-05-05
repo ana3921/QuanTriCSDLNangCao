@@ -3,6 +3,7 @@ package com.banking.repository;
 import com.banking.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,8 +16,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     List<Transaction> findByToAccountAccountIdOrderByCreatedAtDesc(Integer toAccountId);
 
     @Query("SELECT t FROM Transaction t WHERE (t.fromAccount.accountId = :accountId OR t.toAccount.accountId = :accountId) ORDER BY t.createdAt DESC")
-    List<Transaction> findByAccountIdOrderByCreatedAtDesc(Integer accountId);
+    List<Transaction> findByAccountIdOrderByCreatedAtDesc(@Param("accountId") Integer accountId);
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.fromAccount.accountId = :accountId AND t.transactionType IN ('TRANSFER', 'WITHDRAWAL', 'PAYMENT') AND t.status = 'SUCCESS' AND t.createdAt >= :startOfDay AND t.createdAt < :endOfDay")
-    Long getTodaySpentAmount(Integer accountId, LocalDateTime startOfDay, LocalDateTime endOfDay);
+    Long getTodaySpentAmount(@Param("accountId") Integer accountId, @Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
 }

@@ -33,9 +33,8 @@ public class UserService {
         }
 
         User foundUser = user.get();
-        
-        // In a real app, check password hash
-        if (!request.getPassword().equals("password")) {
+
+        if (foundUser.getPasswordHash() == null || !passwordEncoder.matches(request.getPassword(), foundUser.getPasswordHash())) {
             throw new RuntimeException("Invalid credentials");
         }
 

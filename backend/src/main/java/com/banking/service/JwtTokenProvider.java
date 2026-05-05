@@ -2,11 +2,13 @@ package com.banking.service;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
@@ -19,7 +21,15 @@ public class JwtTokenProvider {
     private long jwtExpiration;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private Claims parseClaims(String token) {
+        return Jwts.parserBuilder()
+            .setSigningKey(getSigningKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
     }
 
     public String generateToken(Integer userId, String username, String role) {
@@ -37,29 +47,28 @@ public class JwtTokenProvider {
     }
 
     public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder()
-            .setSigningKey(getSigningKey())
-            .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return parseClaims(token).getSubject();
     }
 
     public Integer getUserIdFromToken(String token) {
-        return (Integer) Jwts.parserBuilder()
-            .setSigningKey(getSigningKey())
-            .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("userId");
+        Object userId = parseClaims(token).get("userId");
+        if (userId instanceof Integer integerUserId) {
+            return integerUserId;
+        }
+        if (userId instanceof Number numberUserId) {
+            return numberUserId.intValue();
+        }
+        return null;
+    }
+
+    public String getRoleFromToken(String token) {
+        Object role = parseClaims(token).get("role");
+        return role != null ? role.toString() : null;
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                    .parseClaimsJws(token);
+            parseClaims(token);
             return true;
         } catch (Exception e) {
             return false;
