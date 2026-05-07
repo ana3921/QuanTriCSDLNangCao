@@ -39,10 +39,14 @@ public class CardServiceTest {
     void setUp() {
         testCustomer = new Customer();
         testCustomer.setCustomerId(1);
-        testCustomer.setFirstName("John");
+        testCustomer.setFullName("John Doe");
+        testCustomer.setIdNumber("ID001");
+        testCustomer.setPhone("0123456789");
+        testCustomer.setKycStatus("VERIFIED");
 
         testCard = new Card();
         testCard.setCardId(1);
+        testCard.setCustomer(testCustomer);
         testCard.setCardNumber("4532015112830366");
         testCard.setCardType("credit");
         testCard.setCardholderName("John Doe");
@@ -58,6 +62,7 @@ public class CardServiceTest {
         testRequest.setCardholderName("John Doe");
         testRequest.setExpiryMonth(12);
         testRequest.setExpiryYear(2025);
+        testRequest.setCvv("123");
     }
 
     @Test

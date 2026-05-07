@@ -1,7 +1,6 @@
 package com.banking.service;
 
-import com.banking.dto.AccountRequest;
-import com.banking.dto.AccountResponse;
+import com.banking.dto.AccountDTO;
 import com.banking.entity.Account;
 import com.banking.entity.Customer;
 import com.banking.repository.AccountRepository;
@@ -35,14 +34,15 @@ public class AccountServiceTest {
 
     private Customer testCustomer;
     private Account testAccount;
-    private AccountRequest testRequest;
 
     @BeforeEach
     void setUp() {
         testCustomer = new Customer();
         testCustomer.setCustomerId(1);
-        testCustomer.setFirstName("John");
-        testCustomer.setLastName("Doe");
+        testCustomer.setFullName("John Doe");
+        testCustomer.setIdNumber("ID001");
+        testCustomer.setPhone("0123456789");
+        testCustomer.setKycStatus("VERIFIED");
 
         testAccount = new Account();
         testAccount.setAccountId(1);
@@ -50,63 +50,53 @@ public class AccountServiceTest {
         testAccount.setAccountType("Savings");
         testAccount.setBalance(BigDecimal.valueOf(5000));
         testAccount.setCustomer(testCustomer);
-        testAccount.setIsActive(true);
-
-        testRequest = new AccountRequest();
-        testRequest.setCustomerId(1);
-        testRequest.setAccountNumber("ACC002");
-        testRequest.setAccountType("Checking");
+        testAccount.setCurrency("VND");
+        testAccount.setStatus("ACTIVE");
+        testAccount.setIsDefault(true);
+        testAccount.setDailyLimit(BigDecimal.valueOf(1000000));
     }
 
     @Test
-    void testGetAccountById() {
-        when(accountRepository.findById(1)).thenReturn(Optional.of(testAccount));
+    void testGetAccountByNumber() {
+        when(accountRepository.findByAccountNumber("ACC001")).thenReturn(Optional.of(testAccount));
 
-        AccountResponse response = accountService.getById(1);
+        AccountDTO response = accountService.getAccountByNumber("ACC001");
 
         assertNotNull(response);
         assertEquals("ACC001", response.getAccountNumber());
-        verify(accountRepository, times(1)).findById(1);
+        verify(accountRepository, times(1)).findByAccountNumber("ACC001");
     }
 
     @Test
-    void testGetAccountByIdNotFound() {
-        when(accountRepository.findById(999)).thenReturn(Optional.empty());
+    void testGetAccountByNumberNotFound() {
+        when(accountRepository.findByAccountNumber("MISSING")).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> accountService.getById(999));
-        verify(accountRepository, times(1)).findById(999);
+        assertThrows(RuntimeException.class, () -> accountService.getAccountByNumber("MISSING"));
+        verify(accountRepository, times(1)).findByAccountNumber("MISSING");
     }
 
     @Test
-    void testCreateAccount() {
-        when(customerRepository.findById(1)).thenReturn(Optional.of(testCustomer));
-        when(accountRepository.save(any(Account.class))).thenReturn(testAccount);
+    void testGetAccountsByCustomerId() {
+        when(accountRepository.findByCustomerCustomerId(1)).thenReturn(java.util.Arrays.asList(testAccount));
 
-        AccountResponse response = accountService.create(testRequest);
-
-        assertNotNull(response);
-        assertEquals("ACC001", response.getAccountNumber());
-        verify(customerRepository, times(1)).findById(1);
-        verify(accountRepository, times(1)).save(any(Account.class));
-    }
-
-    @Test
-    void testCreateAccountCustomerNotFound() {
-        when(customerRepository.findById(999)).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class, () -> accountService.create(testRequest));
-        verify(customerRepository, times(1)).findById(999);
-    }
-
-    @Test
-    void testGetAccountsByCustomer() {
-        when(accountRepository.findByCustomerCustomerIdAndIsActive(1, true))
-                .thenReturn(java.util.Arrays.asList(testAccount));
-
-        java.util.List<AccountResponse> responses = accountService.getByCustomer(1);
+        java.util.List<AccountDTO> responses = accountService.getAccountsByCustomerId(1);
 
         assertNotNull(responses);
         assertEquals(1, responses.size());
-        verify(accountRepository, times(1)).findByCustomerCustomerIdAndIsActive(1, true);
+        assertEquals("ACC001", responses.get(0).getAccountNumber());
+        verify(accountRepository, times(1)).findByCustomerCustomerId(1);
+    }
+
+    @Test
+    void testGetActiveAccountsByCustomerId() {
+        when(accountRepository.findByCustomerCustomerIdAndStatus(1, "ACTIVE"))
+                .thenReturn(java.util.Arrays.asList(testAccount));
+
+        java.util.List<AccountDTO> responses = accountService.getActiveAccountsByCustomerId(1);
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        assertEquals("ACTIVE", responses.get(0).getStatus());
+        verify(accountRepository, times(1)).findByCustomerCustomerIdAndStatus(1, "ACTIVE");
     }
 }
