@@ -8,6 +8,15 @@ GO
 USE banking_db;
 GO
 
+IF OBJECT_ID(N'dbo.notifications', N'U') IS NOT NULL DROP TABLE dbo.notifications;
+IF OBJECT_ID(N'dbo.bill_payments', N'U') IS NOT NULL DROP TABLE dbo.bill_payments;
+IF OBJECT_ID(N'dbo.saved_bills', N'U') IS NOT NULL DROP TABLE dbo.saved_bills;
+IF OBJECT_ID(N'dbo.cards', N'U') IS NOT NULL DROP TABLE dbo.cards;
+IF OBJECT_ID(N'dbo.beneficiaries', N'U') IS NOT NULL DROP TABLE dbo.beneficiaries;
+IF OBJECT_ID(N'dbo.audit_logs', N'U') IS NOT NULL DROP TABLE dbo.audit_logs;
+IF OBJECT_ID(N'dbo.login_history', N'U') IS NOT NULL DROP TABLE dbo.login_history;
+IF OBJECT_ID(N'dbo.system_config', N'U') IS NOT NULL DROP TABLE dbo.system_config;
+IF OBJECT_ID(N'dbo.interest_rates', N'U') IS NOT NULL DROP TABLE dbo.interest_rates;
 IF OBJECT_ID(N'dbo.transactions', N'U') IS NOT NULL DROP TABLE dbo.transactions;
 IF OBJECT_ID(N'dbo.accounts', N'U') IS NOT NULL DROP TABLE dbo.accounts;
 IF OBJECT_ID(N'dbo.customers', N'U') IS NOT NULL DROP TABLE dbo.customers;
