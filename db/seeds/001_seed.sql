@@ -16,7 +16,7 @@ INSERT INTO dbo.users (username, password_hash, email, role, is_active)
 VALUES
     (N'admin', N'$2a$10$s6aQ1ucukNp./Kvb3CQKquJ54G8pE6as0F5ssfVEemU8DMCF04PGG', N'admin@bank.local', N'ADMIN', 1),
     (N'employee1', N'$2a$10$H6K6UGYPWieI9EduH3GkPOeNBq2.QKwdbof6ctP2i0nuyFp0ZzBO2', N'employee1@bank.local', N'EMPLOYEE', 1),
-    (N'customer1', N'$2a$10$4sVhJ.J8QLNttvgmkkSlaejesDTGgSFq6VJ5rg8mZbLXuPWj0mRsy', N'customer1@bank.local', N'CUSTOMER', 1),
+    (N'customer1', N'$2a$10$LZ8mCvlWuFa3dpiYUHAOqOq1M9qxjzFnSG56QkVV7sz33S0SML.ny', N'customer1@bank.local', N'CUSTOMER', 1),
     (N'customer2', N'$2a$10$OEwomJ2Zgqfps13L7CkptOeqlG8xd8ru30xD1ykl0.7o4B7R.5Fn6', N'customer2@bank.local', N'CUSTOMER', 1);
 GO
 
