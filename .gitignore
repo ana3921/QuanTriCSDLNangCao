@@ -6,3 +6,4 @@ backend/target/
 *.log
 .DS_Store
 Thumbs.db
+plan-checklist.md
