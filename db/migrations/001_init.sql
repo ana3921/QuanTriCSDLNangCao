@@ -119,3 +119,23 @@ CREATE INDEX ix_transactions_to_account_id ON dbo.transactions(to_account_id);
 CREATE INDEX ix_notifications_user_id ON dbo.notifications(user_id);
 CREATE INDEX ix_notifications_created_at ON dbo.notifications(created_at);
 GO
+
+IF EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'banking_user')
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'banking_user')
+    BEGIN
+        CREATE USER [banking_user] FOR LOGIN [banking_user];
+    END;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM sys.database_role_members drm
+        INNER JOIN sys.database_principals r ON r.principal_id = drm.role_principal_id
+        INNER JOIN sys.database_principals m ON m.principal_id = drm.member_principal_id
+        WHERE r.name = N'db_owner' AND m.name = N'banking_user'
+    )
+    BEGIN
+        ALTER ROLE db_owner ADD MEMBER [banking_user];
+    END;
+END;
+GO
