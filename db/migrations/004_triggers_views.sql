@@ -22,9 +22,9 @@ BEGIN
 
     IF UPDATE(status) OR UPDATE(balance)
     BEGIN
-        INSERT INTO dbo.audit_logs (user_id, action, target_table, target_id, old_value, new_value)
+        INSERT INTO dbo.audit_logs (user_id, action, entity_type, entity_id, old_value, new_value, description, ip_address)
         SELECT
-            NULL,
+            c.user_id,
             CASE
                 WHEN d.status <> i.status THEN N'UPDATE_ACCOUNT_STATUS'
                 WHEN d.balance <> i.balance THEN N'UPDATE_ACCOUNT_BALANCE'
@@ -33,9 +33,12 @@ BEGIN
             N'accounts',
             i.account_id,
             (SELECT d.account_id, d.account_number, d.status, d.balance, d.daily_limit FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
-            (SELECT i.account_id, i.account_number, i.status, i.balance, i.daily_limit FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+            (SELECT i.account_id, i.account_number, i.status, i.balance, i.daily_limit FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+            N'Account data changed by trigger',
+            N'127.0.0.1'
         FROM inserted i
         INNER JOIN deleted d ON d.account_id = i.account_id
+        INNER JOIN dbo.customers c ON c.customer_id = i.customer_id
         WHERE d.status <> i.status OR d.balance <> i.balance;
     END
 END;
@@ -85,9 +88,9 @@ BEGIN
 
     IF UPDATE(role) OR UPDATE(is_active)
     BEGIN
-        INSERT INTO dbo.audit_logs (user_id, action, target_table, target_id, old_value, new_value)
+        INSERT INTO dbo.audit_logs (user_id, action, entity_type, entity_id, old_value, new_value, description, ip_address)
         SELECT
-            NULL,
+            i.user_id,
             CASE
                 WHEN d.role <> i.role THEN N'UPDATE_USER_ROLE'
                 WHEN d.is_active <> i.is_active THEN N'UPDATE_USER_STATUS'
@@ -96,7 +99,9 @@ BEGIN
             N'users',
             i.user_id,
             (SELECT d.user_id, d.username, d.role, d.is_active FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
-            (SELECT i.user_id, i.username, i.role, i.is_active FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+            (SELECT i.user_id, i.username, i.role, i.is_active FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+            N'User data changed by trigger',
+            N'127.0.0.1'
         FROM inserted i
         INNER JOIN deleted d ON d.user_id = i.user_id
         WHERE d.role <> i.role OR d.is_active <> i.is_active;

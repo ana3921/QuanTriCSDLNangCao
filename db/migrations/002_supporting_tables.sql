@@ -27,52 +27,54 @@ GO
 
 CREATE TABLE dbo.bill_payments (
     bill_payment_id INT IDENTITY(1,1) NOT NULL CONSTRAINT pk_bill_payments PRIMARY KEY,
-    customer_id INT NOT NULL,
-    from_account_id INT NOT NULL,
-    bill_type NVARCHAR(30) NOT NULL,
-    provider_name NVARCHAR(100) NOT NULL,
-    customer_code NVARCHAR(50) NOT NULL,
+    account_id INT NOT NULL,
+    biller_name NVARCHAR(100) NOT NULL,
     amount DECIMAL(18,2) NOT NULL,
-    status NVARCHAR(20) NOT NULL CONSTRAINT df_bill_payments_status DEFAULT N'SUCCESS',
-    transaction_id INT NULL,
-    paid_at DATETIME2 NOT NULL CONSTRAINT df_bill_payments_paid_at DEFAULT SYSUTCDATETIME(),
-    CONSTRAINT fk_bill_payments_customers FOREIGN KEY (customer_id) REFERENCES dbo.customers(customer_id),
-    CONSTRAINT fk_bill_payments_accounts FOREIGN KEY (from_account_id) REFERENCES dbo.accounts(account_id),
-    CONSTRAINT fk_bill_payments_transactions FOREIGN KEY (transaction_id) REFERENCES dbo.transactions(transaction_id),
-    CONSTRAINT ck_bill_payments_bill_type CHECK (bill_type IN (N'ELECTRICITY', N'WATER', N'INTERNET', N'PHONE', N'TUITION', N'INSURANCE', N'CREDIT_CARD', N'LOAN')),
-    CONSTRAINT ck_bill_payments_status CHECK (status IN (N'PENDING', N'SUCCESS', N'FAILED', N'CANCELLED'))
+    due_date DATETIME2 NULL,
+    payment_date DATETIME2 NOT NULL CONSTRAINT df_bill_payments_payment_date DEFAULT SYSUTCDATETIME(),
+    status NVARCHAR(20) NOT NULL CONSTRAINT df_bill_payments_status DEFAULT N'PENDING',
+    reference NVARCHAR(500) NULL,
+    notes NVARCHAR(500) NULL,
+    is_active BIT NOT NULL CONSTRAINT df_bill_payments_is_active DEFAULT 1,
+    created_at DATETIME2 NOT NULL CONSTRAINT df_bill_payments_created_at DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL,
+    CONSTRAINT fk_bill_payments_accounts FOREIGN KEY (account_id) REFERENCES dbo.accounts(account_id),
+    CONSTRAINT ck_bill_payments_status CHECK (status IN (N'PENDING', N'PAID', N'FAILED', N'CANCELLED'))
 );
 GO
 
 CREATE TABLE dbo.saved_bills (
     saved_bill_id INT IDENTITY(1,1) NOT NULL CONSTRAINT pk_saved_bills PRIMARY KEY,
-    customer_id INT NOT NULL,
-    bill_type NVARCHAR(30) NOT NULL,
-    provider_name NVARCHAR(100) NOT NULL,
-    customer_code NVARCHAR(50) NOT NULL,
+    account_id INT NOT NULL,
+    biller_name NVARCHAR(100) NOT NULL,
+    account_number NVARCHAR(100) NOT NULL,
     nickname NVARCHAR(100) NULL,
     is_active BIT NOT NULL CONSTRAINT df_saved_bills_is_active DEFAULT 1,
     created_at DATETIME2 NOT NULL CONSTRAINT df_saved_bills_created_at DEFAULT SYSUTCDATETIME(),
-    CONSTRAINT fk_saved_bills_customers FOREIGN KEY (customer_id) REFERENCES dbo.customers(customer_id),
-    CONSTRAINT uq_saved_bills_customer_provider UNIQUE (customer_id, bill_type, provider_name, customer_code)
+    updated_at DATETIME2 NULL,
+    CONSTRAINT fk_saved_bills_accounts FOREIGN KEY (account_id) REFERENCES dbo.accounts(account_id)
 );
 GO
 
 CREATE TABLE dbo.cards (
     card_id INT IDENTITY(1,1) NOT NULL CONSTRAINT pk_cards PRIMARY KEY,
-    card_number NVARCHAR(20) NOT NULL,
-    account_id INT NOT NULL,
-    card_type NVARCHAR(20) NOT NULL,
+    customer_id INT NOT NULL,
+    card_number NVARCHAR(50) NOT NULL,
+    card_type NVARCHAR(50) NOT NULL,
+    cardholder_name NVARCHAR(100) NOT NULL,
+    expiry_month INT NOT NULL,
+    expiry_year INT NOT NULL,
+    cvv NVARCHAR(3) NOT NULL,
     status NVARCHAR(20) NOT NULL CONSTRAINT df_cards_status DEFAULT N'ACTIVE',
-    expiry_date DATE NOT NULL,
-    daily_limit DECIMAL(18,2) NOT NULL CONSTRAINT df_cards_daily_limit DEFAULT 50000000.00,
-    allow_international BIT NOT NULL CONSTRAINT df_cards_allow_international DEFAULT 0,
-    allow_online BIT NOT NULL CONSTRAINT df_cards_allow_online DEFAULT 1,
-    issued_at DATETIME2 NOT NULL CONSTRAINT df_cards_issued_at DEFAULT SYSUTCDATETIME(),
+    is_active BIT NOT NULL CONSTRAINT df_cards_is_active DEFAULT 1,
+    created_at DATETIME2 NOT NULL CONSTRAINT df_cards_created_at DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 NULL,
     CONSTRAINT uq_cards_card_number UNIQUE (card_number),
-    CONSTRAINT fk_cards_accounts FOREIGN KEY (account_id) REFERENCES dbo.accounts(account_id),
-    CONSTRAINT ck_cards_card_type CHECK (card_type IN (N'DEBIT', N'CREDIT')),
-    CONSTRAINT ck_cards_status CHECK (status IN (N'ACTIVE', N'LOCKED', N'EXPIRED', N'CANCELLED'))
+    CONSTRAINT fk_cards_customers FOREIGN KEY (customer_id) REFERENCES dbo.customers(customer_id),
+    CONSTRAINT ck_cards_card_type CHECK (card_type IN (N'CREDIT', N'DEBIT', N'PREPAID')),
+    CONSTRAINT ck_cards_status CHECK (status IN (N'ACTIVE', N'INACTIVE', N'BLOCKED', N'EXPIRED')),
+    CONSTRAINT ck_cards_expiry_month CHECK (expiry_month BETWEEN 1 AND 12),
+    CONSTRAINT ck_cards_expiry_year CHECK (expiry_year >= 2000)
 );
 GO
 
@@ -90,15 +92,16 @@ CREATE TABLE dbo.login_history (
 GO
 
 CREATE TABLE dbo.audit_logs (
-    log_id INT IDENTITY(1,1) NOT NULL CONSTRAINT pk_audit_logs PRIMARY KEY,
-    user_id INT NULL,
+    audit_log_id INT IDENTITY(1,1) NOT NULL CONSTRAINT pk_audit_logs PRIMARY KEY,
+    user_id INT NOT NULL,
     action NVARCHAR(100) NOT NULL,
-    target_table NVARCHAR(50) NULL,
-    target_id INT NULL,
-    old_value NVARCHAR(MAX) NULL,
-    new_value NVARCHAR(MAX) NULL,
+    entity_type NVARCHAR(50) NOT NULL,
+    entity_id INT NULL,
+    old_value NVARCHAR(500) NULL,
+    new_value NVARCHAR(500) NULL,
+    description NVARCHAR(500) NOT NULL,
     ip_address NVARCHAR(50) NULL,
-    created_at DATETIME2 NOT NULL CONSTRAINT df_audit_logs_created_at DEFAULT SYSUTCDATETIME(),
+    [timestamp] DATETIME2 NOT NULL CONSTRAINT df_audit_logs_timestamp DEFAULT SYSUTCDATETIME(),
     CONSTRAINT fk_audit_logs_users FOREIGN KEY (user_id) REFERENCES dbo.users(user_id)
 );
 GO
@@ -127,9 +130,8 @@ CREATE TABLE dbo.system_config (
 GO
 
 CREATE INDEX ix_beneficiaries_customer_id ON dbo.beneficiaries(customer_id);
-CREATE INDEX ix_bill_payments_customer_id ON dbo.bill_payments(customer_id);
-CREATE INDEX ix_bill_payments_from_account_id ON dbo.bill_payments(from_account_id);
-CREATE INDEX ix_cards_account_id ON dbo.cards(account_id);
+CREATE INDEX ix_bill_payments_account_id ON dbo.bill_payments(account_id);
+CREATE INDEX ix_cards_customer_id ON dbo.cards(customer_id);
 CREATE INDEX ix_login_history_user_id ON dbo.login_history(user_id);
 CREATE INDEX ix_audit_logs_user_id ON dbo.audit_logs(user_id);
 CREATE INDEX ix_interest_rates_term_months ON dbo.interest_rates(term_months);

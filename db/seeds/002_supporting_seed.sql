@@ -72,11 +72,11 @@ VALUES
 GO
 
 -- Cards
-INSERT INTO dbo.cards (card_number, account_id, card_type, status, expiry_date, daily_limit, allow_international, allow_online)
+INSERT INTO dbo.cards (customer_id, card_number, card_type, cardholder_name, expiry_month, expiry_year, cvv, status, is_active)
 VALUES
-    (N'411111******1111', (SELECT account_id FROM dbo.accounts WHERE account_number = N'1000000001'), N'DEBIT', N'ACTIVE', '2028-12-31', 30000000.00, 0, 1),
-    (N'422222******2222', (SELECT account_id FROM dbo.accounts WHERE account_number = N'2000000001'), N'DEBIT', N'LOCKED', '2027-06-30', 20000000.00, 0, 1),
-    (N'433333******3333', (SELECT account_id FROM dbo.accounts WHERE account_number = N'1000000002'), N'CREDIT', N'ACTIVE', '2029-01-31', 50000000.00, 1, 1);
+    ((SELECT customer_id FROM dbo.customers WHERE id_number = N'012345678901'), N'4111111111111111', N'DEBIT', N'Nguyen Van A', 12, 2028, N'111', N'ACTIVE', 1),
+    ((SELECT customer_id FROM dbo.customers WHERE id_number = N'012345678902'), N'4222222222222222', N'DEBIT', N'Tran Thi B', 6, 2027, N'222', N'BLOCKED', 1),
+    ((SELECT customer_id FROM dbo.customers WHERE id_number = N'012345678901'), N'4333333333333333', N'CREDIT', N'Nguyen Van A', 1, 2029, N'333', N'ACTIVE', 1);
 GO
 
 -- Transactions
@@ -130,20 +130,19 @@ VALUES
      350000.00, 0.00, N'PAYMENT', N'SUCCESS', N'Thanh toan tien dien demo', N'BILL001', 0, SYSUTCDATETIME(), SYSUTCDATETIME());
 GO
 
-INSERT INTO dbo.bill_payments (customer_id, from_account_id, bill_type, provider_name, customer_code, amount, status, transaction_id)
+INSERT INTO dbo.bill_payments (account_id, biller_name, amount, due_date, payment_date, status, reference, notes, is_active)
 SELECT
-    c.customer_id,
     a.account_id,
-    N'ELECTRICITY',
     N'EVN HCMC',
-    N'EVN001',
     350000.00,
-    N'SUCCESS',
-    t.transaction_id
-FROM dbo.customers c
-INNER JOIN dbo.accounts a ON a.customer_id = c.customer_id AND a.account_number = N'1000000001'
-INNER JOIN dbo.transactions t ON t.transaction_code = N'BIL202605070001'
-WHERE c.id_number = N'012345678901';
+    DATEADD(DAY, 7, SYSUTCDATETIME()),
+    SYSUTCDATETIME(),
+    N'PAID',
+    N'BILL001',
+    N'Thanh toan tien dien demo',
+    1
+FROM dbo.accounts a
+WHERE a.account_number = N'1000000001';
 GO
 
 -- Beneficiaries
@@ -155,11 +154,11 @@ VALUES
 GO
 
 -- Saved bills
-INSERT INTO dbo.saved_bills (customer_id, bill_type, provider_name, customer_code, nickname, is_active)
+INSERT INTO dbo.saved_bills (account_id, biller_name, account_number, nickname, is_active)
 VALUES
-    ((SELECT customer_id FROM dbo.customers WHERE id_number = N'012345678901'), N'ELECTRICITY', N'EVN HCMC', N'EVN001', N'Tien dien nha', 1),
-    ((SELECT customer_id FROM dbo.customers WHERE id_number = N'012345678901'), N'INTERNET', N'VNPT', N'VNPT001', N'Mang internet', 1),
-    ((SELECT customer_id FROM dbo.customers WHERE id_number = N'012345678902'), N'WATER', N'SAIGON WATER', N'WATER001', N'Tien nuoc', 1);
+    ((SELECT account_id FROM dbo.accounts WHERE account_number = N'1000000001'), N'EVN HCMC', N'EVN001', N'Tien dien nha', 1),
+    ((SELECT account_id FROM dbo.accounts WHERE account_number = N'1000000001'), N'VNPT', N'VNPT001', N'Mang internet', 1),
+    ((SELECT account_id FROM dbo.accounts WHERE account_number = N'2000000001'), N'SAIGON WATER', N'WATER001', N'Tien nuoc', 1);
 GO
 
 -- Login history
@@ -171,10 +170,10 @@ VALUES
 GO
 
 -- Audit logs
-INSERT INTO dbo.audit_logs (user_id, action, target_table, target_id, old_value, new_value, ip_address)
+INSERT INTO dbo.audit_logs (user_id, action, entity_type, entity_id, old_value, new_value, description, ip_address)
 VALUES
-    (NULL, N'SEED_INITIAL_DATA', N'users', NULL, NULL, N'Initial seed data loaded', N'127.0.0.1'),
-    (NULL, N'SEED_INITIAL_DATA', N'accounts', NULL, NULL, N'Accounts and demo transactions loaded', N'127.0.0.1');
+    ((SELECT user_id FROM dbo.users WHERE username = N'admin'), N'SEED_INITIAL_DATA', N'users', NULL, NULL, N'Initial seed data loaded', N'Seed inserted users', N'127.0.0.1'),
+    ((SELECT user_id FROM dbo.users WHERE username = N'admin'), N'SEED_INITIAL_DATA', N'accounts', NULL, NULL, N'Accounts and demo transactions loaded', N'Seed inserted accounts and transactions', N'127.0.0.1');
 GO
 
 -- Notifications

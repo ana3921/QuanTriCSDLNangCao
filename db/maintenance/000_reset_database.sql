@@ -1,0 +1,12 @@
+USE master;
+GO
+
+IF DB_ID(N'banking_db') IS NOT NULL
+BEGIN
+    ALTER DATABASE banking_db SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE banking_db;
+END
+GO
+
+CREATE DATABASE banking_db COLLATE Vietnamese_CI_AS;
+GO
