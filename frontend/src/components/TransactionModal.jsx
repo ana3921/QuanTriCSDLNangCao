@@ -10,17 +10,17 @@ export default function TransactionModal({ open, onCancel, onComplete, selectedA
     try {
       setLoading(true)
       const transferRequest = {
-        fromAccountId: selectedAccount.accountId,
-        toAccountId: values.toAccountId,
+        fromAccountNumber: selectedAccount.accountNumber,
+        toAccountNumber: values.toAccountNumber,
         amount: values.amount,
-        description: values.description || 'Transfer'
+        description: values.description || 'Chuyển tiền'
       }
       await transactionService.transfer(transferRequest)
-      message.success('Transfer successful!')
+      message.success('Chuyển tiền thành công!')
       form.resetFields()
       onComplete()
     } catch (error) {
-      message.error(error.response?.data?.message || 'Transfer failed')
+      message.error(error.response?.data?.message || 'Chuyển tiền thất bại')
     } finally {
       setLoading(false)
     }
@@ -30,7 +30,7 @@ export default function TransactionModal({ open, onCancel, onComplete, selectedA
 
   return (
     <Modal
-      title="Transfer Money"
+      title="Chuyển tiền"
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -42,7 +42,7 @@ export default function TransactionModal({ open, onCancel, onComplete, selectedA
           layout="vertical"
           onFinish={handleSubmit}
         >
-          <Form.Item label="From Account">
+          <Form.Item label="Từ tài khoản">
             <Input
               disabled
               value={selectedAccount?.accountNumber}
@@ -50,13 +50,13 @@ export default function TransactionModal({ open, onCancel, onComplete, selectedA
           </Form.Item>
 
           <Form.Item
-            label="To Account"
-            name="toAccountId"
-            rules={[{ required: true, message: 'Please select a destination account' }]}
+            label="Đến tài khoản"
+            name="toAccountNumber"
+            rules={[{ required: true, message: 'Vui lòng chọn tài khoản nhận' }]}
           >
-            <Select placeholder="Select destination account">
+            <Select placeholder="Chọn tài khoản nhận">
               {otherAccounts.map(acc => (
-                <Select.Option key={acc.accountId} value={acc.accountId}>
+                <Select.Option key={acc.accountId} value={acc.accountNumber}>
                   {acc.accountNumber} - {acc.accountType}
                 </Select.Option>
               ))}
@@ -64,9 +64,9 @@ export default function TransactionModal({ open, onCancel, onComplete, selectedA
           </Form.Item>
 
           <Form.Item
-            label="Amount"
+            label="Số tiền"
             name="amount"
-            rules={[{ required: true, message: 'Please input transfer amount' }]}
+            rules={[{ required: true, message: 'Vui lòng nhập số tiền' }]}
           >
             <InputNumber
               placeholder="0"
@@ -77,18 +77,18 @@ export default function TransactionModal({ open, onCancel, onComplete, selectedA
           </Form.Item>
 
           <Form.Item
-            label="Description"
+            label="Nội dung"
             name="description"
           >
             <Input.TextArea
               rows={3}
-              placeholder="Transfer description (optional)"
+              placeholder="Nội dung chuyển khoản (không bắt buộc)"
             />
           </Form.Item>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" block size="large" loading={loading}>
-              Transfer
+              Chuyển tiền
             </Button>
           </Form.Item>
         </Form>

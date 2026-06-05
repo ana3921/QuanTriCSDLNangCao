@@ -31,7 +31,7 @@ export default function LoginPage() {
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     }}>
-      <Card style={{ width: 400 }} title="Login to Banking App">
+      <Card style={{ width: 400 }} title="Đăng nhập">
         {error && <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} />}
         <Spin spinning={isLoading}>
           <Form
@@ -40,26 +40,26 @@ export default function LoginPage() {
             onFinish={handleLogin}
           >
             <Form.Item
-              label="Username"
+              label="Tên đăng nhập"
               name="username"
-              rules={[{ required: true, message: 'Please input your username!' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
             >
               <Input 
                 prefix={<UserOutlined />}
-                placeholder="Username"
+                placeholder="Tên đăng nhập"
                 disabled={isLoading}
               />
             </Form.Item>
 
             <Form.Item
-              label="Password"
+              label="Mật khẩu"
               name="password"
-              rules={[{ required: true, message: 'Please input your password!' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
             >
               <Input 
                 prefix={<LockOutlined />}
                 type="password"
-                placeholder="Password"
+                placeholder="Mật khẩu"
                 disabled={isLoading}
               />
             </Form.Item>
@@ -72,13 +72,13 @@ export default function LoginPage() {
                 size="large"
                 loading={isLoading}
               >
-                Login
+                Đăng nhập
               </Button>
             </Form.Item>
           </Form>
         </Spin>
         <p style={{ textAlign: 'center', color: '#666' }}>
-          Demo: username: customer1, password: password123
+          Demo: tên đăng nhập: customer1, mật khẩu: password123
         </p>
       </Card>
     </div>

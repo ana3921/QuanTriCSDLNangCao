@@ -4,6 +4,7 @@ import com.banking.dto.LoginRequest;
 import com.banking.dto.LoginResponse;
 import com.banking.entity.User;
 import com.banking.repository.UserRepository;
+import com.banking.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -40,9 +42,14 @@ public class UserService {
 
         String token = jwtTokenProvider.generateToken(foundUser.getUserId(), foundUser.getUsername(), foundUser.getRole());
 
+        Integer customerId = customerRepository.findByUserUserId(foundUser.getUserId())
+            .map(c -> c.getCustomerId())
+            .orElse(null);
+
         return LoginResponse.builder()
                 .token(token)
                 .userId(foundUser.getUserId())
+            .customerId(customerId)
                 .username(foundUser.getUsername())
                 .role(foundUser.getRole())
                 .build();

@@ -1,7 +1,12 @@
-import { Card, Button } from 'antd'
-import { EyeOutlined } from '@ant-design/icons'
+import { Card } from 'antd'
 
 export default function AccountCard({ account, isSelected, onSelect, showBalance, formatCurrency }) {
+  const accountTypeLabel = account.accountType === 'SAVINGS'
+    ? 'Tiết kiệm'
+    : account.accountType === 'PAYMENT'
+      ? 'Thanh toán'
+      : account.accountType
+
   return (
     <Card
       onClick={() => onSelect(account)}
@@ -15,14 +20,14 @@ export default function AccountCard({ account, isSelected, onSelect, showBalance
     >
       <div style={{ marginBottom: 12 }}>
         <p style={{ fontSize: 12, color: '#666', margin: '0 0 4px 0' }}>
-          {account.accountType}
+          {accountTypeLabel}
         </p>
         <p style={{ fontSize: 14, margin: 0, fontWeight: 500 }}>
           {account.accountNumber}
         </p>
       </div>
       <div style={{ marginBottom: 12 }}>
-        <p style={{ fontSize: 11, color: '#999', margin: 0 }}>Balance</p>
+        <p style={{ fontSize: 11, color: '#999', margin: 0 }}>Số dư</p>
         <p style={{ fontSize: 18, fontWeight: 'bold', margin: 0, color: '#1890ff' }}>
           {showBalance ? formatCurrency(account.balance) : '••••••'}
         </p>
